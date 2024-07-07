@@ -1,0 +1,261 @@
+﻿{
+  "version": 3,
+  "configurePresets": [
+    {
+      "installDir": "${sourceDir}/Install/${presetName}",
+      "binaryDir": "${sourceDir}/Install/${presetName}",   
+      "condition": {
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows",
+        "type": "equals"
+      },
+      "generator": "Ninja Multi-Config",
+      "hidden": true,
+      "name": "Chrishendo-Windows-Base"
+    },
+    {
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VCPKG_DIR": "C:/Vcpkg/"
+      },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Release"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CHRISHENDO_TEST": true,
+        "VCPKG_DIR": "C:/Vcpkg/"
+      },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Release-Dev"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Debug",
+      "VCPKG_DIR": "C:/Vcpkg/"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHRISHENDO_TEST": true,
+        "VCPKG_DIR": "C:/Vcpkg/"
+      },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Debug-Dev"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "ASAN_ENABLED": "TRUE",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Release-Asan"
+    },
+    {
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ASAN_ENABLED": "TRUE",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Windows-Base",
+      "name": "Chrishendo-Windows-Debug-Asan"
+    },
+    {
+      "installDir": "${sourceDir}/Install/${presetName}",
+      "binaryDir": "${sourceDir}/Install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "/usr/bin/clang++-18",
+        "CMAKE_C_COMPILER": "/usr/bin/clang-18"
+      },
+      "condition": {
+        "lhs": "${hostSystemName}",
+        "rhs": "Chrishendo-Linux",
+        "type": "equals"
+      },
+      "generator": "Unix Makefiles",
+      "hidden": true,
+      "name": "Chrishendo-Linux-Base"
+    },
+    {
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Release"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Release-Dev"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Debug"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Debug-Dev"
+    },
+    {
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "ASAN_ENABLED": true,
+        "CMAKE_BUILD_TYPE": "Release",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Release-Asan"
+    },
+    {
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ASAN_ENABLED": true,
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CHRISHENDO_TEST": true
+      },
+      "inherits": "Chrishendo-Linux-Base",
+      "name": "Chrishendo-Linux-Debug-Asan"
+    }
+  ],
+  "buildPresets": [
+    {
+      "configurePreset": "Chrishendo-Windows-Release",
+      "configuration": "Release",
+      "inheritConfigureEnvironment": true,
+      "name": "Chrishendo-Windows-Release",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Windows-Debug",
+      "configuration": "Debug",
+      "inheritConfigureEnvironment": true,
+      "name": "Chrishendo-Windows-Debug",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Windows-Release-Asan",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Release",
+      "name": "Chrishendo-Windows-Release-Asan",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Windows-Debug-Asan",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug",
+      "name": "Chrishendo-Windows-Debug-Asan",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Windows-Release-Dev",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Release",
+      "name": "Chrishendo-Windows-Release-Dev",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Windows-Debug-Dev",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug",
+      "name": "Chrishendo-Windows-Debug-Dev",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Release",
+      "configuration": "Release",
+      "inheritConfigureEnvironment": true,
+      "name": "Chrishendo-Linux-Release",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Debug",
+      "configuration": "Debug",
+      "inheritConfigureEnvironment": true,
+      "name": "Chrishendo-Linux-Debug",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Release-Asan",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Release",
+      "name": "Chrishendo-Linux-Release-Asan",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Debug-Asan",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug",
+      "name": "Chrishendo-Linux-Debug-Asan",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Release-Dev",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Release",
+      "name": "Chrishendo-Linux-Release-Dev",
+      "verbose": true
+    },
+    {
+      "configurePreset": "Chrishendo-Linux-Debug-Dev",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug",
+      "name": "Chrishendo-Linux-Debug-Dev",
+      "verbose": true
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+name: Build-and-Test-CLANG-MacOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+    - dev
+
+jobs:
+  Build:
+    runs-on: macos-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        clang: [17]
+        build_type: [Debug, Release]
+        std: [20]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install the latest clang compiler.
+      run: |
+            brew install llvm
+
+    - name: Install Nasm.
+      run: |
+            brew install nasm
+
+    - name: Update Vcpkg and install other dependencies.
+      run: |
+            git clone https://github.com/Microsoft/Vcpkg ./vcpkg
+            cd ./vcpkg
+            ./bootstrap-vcpkg.sh
+            git stash
+            git pull
+            ./vcpkg update
+
+    - name: Install xxHash
+      run: |
+            cd ./vcpkg
+            ./vcpkg install xxHash:arm64-osx
+
+    - name: Configure CMake
+      working-directory: ./
+      run: |           
+           echo "CPU Frequency: ${cpu_freq_mhz} MHz"
+           sudo cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCHRISHENDO_TEST=true -DVCPKG_DIR=/Users/runner/work/Chrishendo/Chrishendo/vcpkg -DCPU_FREQUENCY_MHZ=${cpu_freq_mhz}
+
+    - name: Build the Test
+      working-directory: ./Build
+      run: |
+           sudo cmake --build . --config=${{matrix.build_type}}
+
+    - name: Install the Test
+      working-directory: ./Build
+      run: |
+           sudo cmake --install . --config=${{matrix.build_type}}
+
+    - name: Run the Test
+      working-directory: ./Build/Tests
+      run: |
+           sudo ./Hash-Performance
+      continue-on-error: true
+      
