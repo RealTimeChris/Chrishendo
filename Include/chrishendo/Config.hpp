@@ -80,18 +80,18 @@
 #endif
 
 #if defined(CHRISHENDO_MSVC)
-	#define CHRISHENDO_ALWAYS_INLINE __forceinline
 	#define CHRISHENDO_NO_INLINE __declspec(noinline)
-	#define CHRISHENDO_INLINE __inline
-#elif defined(CHRISHENDO_GNUCXX) || defined(CHRISHENDO_CLANG)
-	#define CHRISHENDO_ALWAYS_INLINE __attribute__((__always_inline__)) inline
+	#define CHRISHENDO_INLINE __forceinline
+#elif defined(CHRISHENDO_CLANG)
 	#define CHRISHENDO_NO_INLINE __attribute__((__noinline__))
-	#define CHRISHENDO_INLINE inline
+	#define CHRISHENDO_INLINE inline __attribute__((always_inline))
+#elif defined(CHRISHENDO_GNUCXX)
+	#define CHRISHENDO_NO_INLINE __attribute__((noinline))
+	#define CHRISHENDO_INLINE __attribute__((always_inline))
 #else
-	#define CHRISHENDO_ALWAYS_INLINE inline
 	#define CHRISHENDO_INLINE inline
 	#define CHRISHENDO_NO_INLINE
-#endif
+#endif 
 
 #if !defined(CHRISHENDO_CPU_INSTRUCTIONS)
 	#define CHRISHENDO_CPU_INSTRUCTIONS 0

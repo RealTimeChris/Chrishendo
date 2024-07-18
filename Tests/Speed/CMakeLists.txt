@@ -5,7 +5,7 @@ project(Chrishendo)
 set(CMAKE_CXX_STANDARD 20)
 
 include(FetchContent)
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
 if (WIN32)
 	set(OS "windows")
 	set(ARCHITECTURE "x64")
@@ -38,6 +38,10 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(BenchmarkSuite)
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_BUILD_RPATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+set(CMAKE_INSTALL_RPATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 add_executable("Hash-Performance" "./main.cpp")
 
@@ -72,7 +76,7 @@ if (WIN32)
 	install(
 		FILES 
 		"$<TARGET_PDB_FILE:Hash-Performance>"
-		DESTINATION "${CMAKE_INSTALL_PREFIX}/Tests/${CMAKE_BUILD_TYPE}"
+		DESTINATION "${CMAKE_INSTALL_PREFIX}"
 		OPTIONAL
 	)
 endif()
@@ -87,13 +91,13 @@ target_compile_definitions(
 install(
 	FILES 
 	"$<TARGET_FILE:Hash-Performance>"
-	DESTINATION "${CMAKE_INSTALL_PREFIX}/Tests/${CMAKE_BUILD_TYPE}"
+	DESTINATION "${CMAKE_INSTALL_PREFIX}"
 	OPTIONAL
 )
 
 install(
 	FILES 
 	"$<TARGET_RUNTIME_DLLS:Hash-Performance>"
-	DESTINATION "${CMAKE_INSTALL_PREFIX}/Tests/${CMAKE_BUILD_TYPE}"
+	DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}"
 	OPTIONAL
 )

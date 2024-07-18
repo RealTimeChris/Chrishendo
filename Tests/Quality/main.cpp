@@ -76,20 +76,6 @@ template<bool isItSeeded, typename hashtype, bnch_swt::string_literal libraryNam
 		}		
 	}
 
-	
-
-		{
-			std::cout << "[[[ Differential Distribution Tests ]]] - " << libraryName.data() << std::endl;
-
-			bool result = true;
-
-			result &= DiffDistTest2<isItSeeded, uint64_t, hashtype>(hash);
-			if (!result) {
-				std::cout << "*********FAIL*********" << std::endl;
-			} else {
-				std::cout << "*********SUCCESS*********" << std::endl;
-			}
-		}
 
 	{
 		std::cout << "[[[ Avalanche Tests ]]] - " << libraryName.data() << std::endl;
@@ -346,7 +332,21 @@ template<bool isItSeeded, typename hashtype, bnch_swt::string_literal libraryNam
 				std::cout << "*********SUCCESS*********" << std::endl;
 			}
 		}
-		
+
+		auto differentialDistributionTests = [&] {
+			std::cout << "[[[ Differential Distribution Tests ]]] - " << libraryName.data() << std::endl;
+
+			bool result = true;
+
+			result &= DiffDistTest2<isItSeeded, uint64_t, hashtype>(hash);
+			if (!result) {
+				std::cout << "*********FAIL*********" << std::endl;
+			} else {
+				std::cout << "*********SUCCESS*********" << std::endl;
+			}
+		};
+
+		differentialDistributionTests();
 	
 }
 
@@ -410,9 +410,9 @@ inline void executePythonScript(const std::string& scriptPath, const std::string
 static constexpr std::string_view basePath{ BASE_PATH };
 int32_t main() {
 	setAffinity((1 << 2));
-	testHash<true, "Chrishendo", "turquoise">(HashInfo<true>{ chrishendoTestNew<true>, 0x1B19C201, "A general purpose hybrid hasher", 64 });
+	testHash<true, "Chrishendo", "turquoise">(HashInfo<true>{ chrishendoTestNew<true>, 0xDE9C92E8, "A general purpose hybrid hasher", 64 });
 	testHash<true, "XXH3_64bitsTest", "cyan">(HashInfo<true>{ XXH3_64bitsTest<true>, 0x5A116D6B, "A win hash algo by xxHash", 64 });
-	testHash<false, "Chrishendo", "turquoise">(HashInfo<false>{ chrishendoTestNew<false>, 0x1B19C201, "A general purpose hybrid hasher", 64 });
+	testHash<false, "Chrishendo", "turquoise">(HashInfo<false>{ chrishendoTestNew<false>, 0xDE9C92E8, "A general purpose hybrid hasher", 64 });
 	testHash<false, "XXH3_64bitsTest", "cyan">(HashInfo<false>{ XXH3_64bitsTest<false>, 0x5A116D6B, "A win hash algo by xxHash", 64 });
 	//testHash<"chrishendoNewCt", "turquoise">(HashInfo<true>{ chrishendoTestNewCt<true>, 0x814F3144, "A general purpose hybrid hasher", 64 });
 	bnch_swt::benchmark_suite<"Speed Test">::writeJsonData("./BenchmarkData.json");

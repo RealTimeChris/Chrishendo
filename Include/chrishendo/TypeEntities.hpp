@@ -41,23 +41,27 @@ namespace chrishendo_internal {
 
 	template<typename... value_type> using unwrap_t = std::remove_cvref_t<typename collect_first_type<value_type...>::type>;
 
+	template<template<uint64_t> typename hash_wrapper, std::size_t... indices> constexpr auto generateArrayOfFunctionPtrs(std::index_sequence<indices...>) {
+		return std::array<decltype(&hash_wrapper<0>::op), sizeof...(indices)>{ &hash_wrapper<indices>::op... };
+	}
+
 	namespace concepts {
 
 		template<typename value_type>
-		concept simd_int_512_type = std::is_same_v<simd_int_512, std::remove_cvref_t<value_type>>;
+		concept chrishendo_simd_int_512_type = std::is_same_v<chrishendo_simd_int_512, std::remove_cvref_t<value_type>>;
 
 		template<typename value_type>
-		concept simd_int_256_type = std::is_same_v<simd_int_256, std::remove_cvref_t<value_type>>;
+		concept chrishendo_simd_int_256_type = std::is_same_v<chrishendo_simd_int_256, std::remove_cvref_t<value_type>>;
 
 		template<typename value_type>
-		concept simd_int_128_type = std::is_same_v<simd_int_128, std::remove_cvref_t<value_type>>;
+		concept chrishendo_simd_int_128_type = std::is_same_v<chrishendo_simd_int_128, std::remove_cvref_t<value_type>>;
 
 		template<typename value_type>
-		concept simd_int_type = std::is_same_v<simd_int_t, std::remove_cvref_t<value_type>>;
+		concept chrishendo_simd_int_type = std::is_same_v<chrishendo_simd_int_t, std::remove_cvref_t<value_type>>;
 
 		template<typename value_type>
-		concept bool_t = std::is_same_v<chrishendo_internal::unwrap_t<value_type>, bool> || std::same_as<chrishendo_internal::unwrap_t<value_type>, jsonifier::vector<bool>::reference> ||
-			std::same_as<chrishendo_internal::unwrap_t<value_type>, jsonifier::vector<bool>::const_reference>;
+		concept bool_t = std::is_same_v<chrishendo_internal::unwrap_t<value_type>, bool> || std::same_as<chrishendo_internal::unwrap_t<value_type>, std::vector<bool>::reference> ||
+			std::same_as<chrishendo_internal::unwrap_t<value_type>, std::vector<bool>::const_reference>;
 
 		template<typename value_type>
 		concept signed_type = std::signed_integral<chrishendo_internal::unwrap_t<value_type>> && !bool_t<value_type>;

@@ -38,17 +38,17 @@ jobs:
 
     - name: Install xxHash
       run: |
-            vcpkg install xxHash:x64-linux
+            sudo vcpkg install xxHash:x64-linux
 
     - name: Configure CMake
       working-directory: ./
       run: |
-           cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCHRISHENDO_QUALITY_TEST=true -DVCPKG_DIR=/usr/local/share/vcpkg
+           sudo cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCHRISHENDO_QUALITY_TEST=true -DVCPKG_DIR=/usr/local/share/vcpkg
 
     - name: Build the Test
       working-directory: ./Build
       run: |
-           cmake --build . --config=${{matrix.build_type}}
+            sudo cmake --build . --config=${{matrix.build_type}}
 
     - name: Install the Test
       working-directory: ./Build
