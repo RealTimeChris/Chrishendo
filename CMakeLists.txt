@@ -117,6 +117,9 @@ install(
 	DESTINATION "share/chrishendo"
 )
 
-if(CHRISHENDO_TEST)
-	add_subdirectory("./Tests")
+if(CHRISHENDO_QUALITY_TEST)
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Tests/Quality")
+endif()
+if(CHRISHENDO_SPEED_TEST)
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Tests/Speed")
 endif()

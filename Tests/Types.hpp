@@ -452,7 +452,7 @@ template<bool isItSeeded, typename hashtype> struct CollisionCallback : public K
 		m_pfHash(key, len, 0, &h);
 
 		if (m_collisions.count(h)) {
-			m_collmap[h].push_back(ByteVec(key, len));
+			m_collmap[h].emplace_back(ByteVec(key, len));
 		}
 	}
 

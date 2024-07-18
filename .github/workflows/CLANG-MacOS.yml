@@ -47,7 +47,7 @@ jobs:
       working-directory: ./
       run: |           
            echo "CPU Frequency: ${cpu_freq_mhz} MHz"
-           sudo cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCHRISHENDO_TEST=true -DVCPKG_DIR=/Users/runner/work/Chrishendo/Chrishendo/vcpkg -DCPU_FREQUENCY_MHZ=${cpu_freq_mhz}
+           sudo cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCHRISHENDO_QUALITY_TEST=true -DVCPKG_DIR=/Users/runner/work/Chrishendo/Chrishendo/vcpkg -DCPU_FREQUENCY_MHZ=${cpu_freq_mhz}
 
     - name: Build the Test
       working-directory: ./Build
@@ -60,7 +60,7 @@ jobs:
            sudo cmake --install . --config=${{matrix.build_type}}
 
     - name: Run the Test
-      working-directory: ./Build/Tests
+      working-directory: ./Build/Tests/Quality
       run: |
            sudo ./Hash-Performance
       continue-on-error: true

@@ -31,7 +31,7 @@ void CombinationKeygenRecurse(uint32_t* key, int32_t len, int32_t maxlen, uint32
 			hashtype h;
 			//std::cout << "CURRENT LENGTH: " << (len + 1) * sizeof(int32_t) << std::endl;
 			hash(key, (len + 1) * sizeof(uint32_t), 0, &h);
-			hashes.push_back(h);
+			hashes.emplace_back(h);
 		}
 
 		//else
@@ -76,7 +76,7 @@ template<bool isItSeeded, typename hashtype> void PermutationKeygenRecurse(pfHas
 
 		hash(blocks, blockcount * sizeof(uint32_t), 0, &h);
 
-		hashes.push_back(h);
+		hashes.emplace_back(h);
 
 		return;
 	}
@@ -128,11 +128,11 @@ void SparseKeygenRecurse(pfHash<isItSeeded> hash, int32_t start, int32_t bitslef
 
 		if (inclusive || (bitsleft == 1)) {
 			hash(&k, sizeof(keytype), 0, &h);
-			hashes.push_back(h);
+			hashes.emplace_back(h);
 		}
 
 		if (bitsleft > 1) {
-			SparseKeygenRecurse(hash, i + 1, bitsleft - 1, inclusive, k, hashes);
+			SparseKeygenRecurse<isItSeeded>(hash, i + 1, bitsleft - 1, inclusive, k, hashes);
 		}
 
 		flipbit(&k, nbytes, i);
@@ -157,10 +157,10 @@ bool SparseKeyTest(hashfunc<isItSeeded, hashtype> hash, const int32_t setbits, b
 
 		hash(&k, sizeof(keytype), 0, &h);
 
-		hashes.push_back(h);
+		hashes.emplace_back(h);
 	}
 
-	SparseKeygenRecurse(hash, 0, setbits, inclusive, k, hashes);
+	SparseKeygenRecurse<isItSeeded>(hash, 0, setbits, inclusive, k, hashes);
 
 	printf("%d keys\n", ( int32_t )hashes.size());
 

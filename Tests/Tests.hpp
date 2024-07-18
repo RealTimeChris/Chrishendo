@@ -11,13 +11,13 @@ chrishendo::key_hasher hasherNew{};
 
 template<bool isItSeeded> inline void chrishendoTestNew(const void* key, int32_t len, uint32_t seed, void* out) {
 	if constexpr (isItSeeded) {
-		//hasherNew.setSeedRt(seed);
+		hasherNew.setSeedRt(seed);
 	}*(uint64_t*)out = hasherNew.hashKeyRt((const char*)key, len);
 }
 
 template<bool isItSeeded> inline void chrishendoTestNewCt(const void* key, int32_t len, uint32_t seed, void* out) {
 	if constexpr (isItSeeded) {
-		//hasherNew.setSeedRt(seed);
+		hasherNew.setSeedRt(seed);
 	}
 	*( uint64_t* )out = hasherNew.hashKeyCt(( const char* )key, len);
 }

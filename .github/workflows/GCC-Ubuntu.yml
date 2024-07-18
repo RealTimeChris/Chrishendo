@@ -43,7 +43,7 @@ jobs:
     - name: Configure CMake
       working-directory: ./
       run: |
-           cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCHRISHENDO_TEST=true -DVCPKG_DIR=/usr/local/share/vcpkg
+           cmake -S . -B ./Build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCHRISHENDO_QUALITY_TEST=true -DVCPKG_DIR=/usr/local/share/vcpkg
 
     - name: Build the Test
       working-directory: ./Build
@@ -56,7 +56,7 @@ jobs:
            sudo cmake --install . --config=${{matrix.build_type}}
 
     - name: Run the Test
-      working-directory: ./Build/Tests
+      working-directory: ./Build/Tests/Quality
       run: |
            ./Hash-Performance
       continue-on-error: true

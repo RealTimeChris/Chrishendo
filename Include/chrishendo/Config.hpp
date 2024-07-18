@@ -79,22 +79,18 @@
 	#define ASSUME(x) (( void )0)
 #endif
 
-#if defined(CHRISHENDO_GNUCXX) || defined(CHRISHENDO_CLANG)
-	#define CHRISHENDO_ALWAYS_INLINE __inline__ __attribute__((__always_inline__, __unused__))
-	#define CHRISHENDO_NO_INLINE __attribute__((__noinline__))
-	#define CHRISHENDO_INLINE __attribute__((__inline__))
-#elif defined(CHRISHENDO_MSVC) /* Visual Studio */
+#if defined(CHRISHENDO_MSVC)
 	#define CHRISHENDO_ALWAYS_INLINE __forceinline
 	#define CHRISHENDO_NO_INLINE __declspec(noinline)
+	#define CHRISHENDO_INLINE __inline
+#elif defined(CHRISHENDO_GNUCXX) || defined(CHRISHENDO_CLANG)
+	#define CHRISHENDO_ALWAYS_INLINE __attribute__((__always_inline__)) inline
+	#define CHRISHENDO_NO_INLINE __attribute__((__noinline__))
 	#define CHRISHENDO_INLINE inline
-#elif defined(__cplusplus) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) /* C99 */
+#else
 	#define CHRISHENDO_ALWAYS_INLINE inline
 	#define CHRISHENDO_INLINE inline
-	#define CHRISHENDO_NO_INLINE 
-#else
-	#define CHRISHENDO_ALWAYS_INLINE 
-	#define CHRISHENDO_INLINE 
-	#define CHRISHENDO_NO_INLINE 
+	#define CHRISHENDO_NO_INLINE
 #endif
 
 #if !defined(CHRISHENDO_CPU_INSTRUCTIONS)
@@ -232,47 +228,3 @@ using string_buffer_ptr = char*;
 CHRISHENDO_INLINE void chrishendoPrefetchInternal(const void* ptr) {
 PREFETCH(ptr)
 }
-
-CHRISHENDO_INLINE constexpr uint32_t CHRISHENDO_rotl32Ct(uint32_t x, uint32_t r) {
-	return (((x) << (r)) | ((x) >> (32 - (r))));
-};
-
-CHRISHENDO_INLINE constexpr uint64_t CHRISHENDO_rotl64Ct(uint64_t x, uint64_t r) {
-	return (((x) << (r)) | ((x) >> (64 - (r))));
-};
-
-#if !defined(NO_CLANG_BUILTIN) && CHRISHENDO_HAS_BUILTIN(__builtin_rotateleft32) && CHRISHENDO_HAS_BUILTIN(__builtin_rotateleft64)
-	#define CHRISHENDO_rotl32Rt __builtin_rotateleft32
-	#define CHRISHENDO_rotl64Rt __builtin_rotateleft64
-#elif defined(CHRISHENDO_MSVC)
-#  define CHRISHENDO_rotl32Rt(x,r) _rotl(x,r)
-#  define CHRISHENDO_rotl64Rt(x,r) _rotl64(x,r)
-#else
-	#define CHRISHENDO_rotl32Rt(x, r) CHRISHENDO_rotl32Ct(x, r)
-	#define CHRISHENDO_rotl64Rt(x, r) CHRISHENDO_rotl64Ct(x, r)
-#endif
-
-CHRISHENDO_INLINE constexpr uint32_t CHRISHENDO_swap32Ct(uint32_t x) {
-	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
-}
-
-#if defined(CHRISHENDO_MSVC)
-	#  define CHRISHENDO_swap32Rt _byteswap_ulong
-#elif CHRISHENDO_GCC_VERSION >= 403
-#  define CHRISHENDO_swap32Rt __builtin_bswap32
-#else
-	#define CHRISHENDO_swap32Rt CHRISHENDO_swap32Ct
-#endif
-
-CHRISHENDO_INLINE constexpr uint64_t CHRISHENDO_swap64Ct(uint64_t x) {
-	return ((x << 56) & 0xff00000000000000ULL) | ((x << 40) & 0x00ff000000000000ULL) | ((x << 24) & 0x0000ff0000000000ULL) | ((x << 8) & 0x000000ff00000000ULL) |
-		((x >> 8) & 0x00000000ff000000ULL) | ((x >> 24) & 0x0000000000ff0000ULL) | ((x >> 40) & 0x000000000000ff00ULL) | ((x >> 56) & 0x00000000000000ffULL);
-}
-
-#if defined(CHRISHENDO_MSVC)
-	#define CHRISHENDO_swap64Rt _byteswap_uint64
-#elif CHRISHENDO_GCC_VERSION >= 403
-	#define CHRISHENDO_swap64Rt __builtin_bswap64
-#else
-	#define CHRISHENDO_swap64Rt CHRISHENDO_swap64Ct
-#endif

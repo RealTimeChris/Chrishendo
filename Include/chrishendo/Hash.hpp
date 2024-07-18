@@ -581,6 +581,49 @@ namespace chrishendo_internal {
     }
 
 #endif
+    CHRISHENDO_INLINE constexpr uint32_t CHRISHENDO_rotl32Ct(uint32_t x, uint32_t r) {
+		return (((x) << (r)) | ((x) >> (32 - (r))));
+	};
+
+	CHRISHENDO_INLINE constexpr uint64_t CHRISHENDO_rotl64Ct(uint64_t x, uint64_t r) {
+		return (((x) << (r)) | ((x) >> (64 - (r))));
+	};
+
+#if !defined(NO_CLANG_BUILTIN) && CHRISHENDO_HAS_BUILTIN(__builtin_rotateleft32) && CHRISHENDO_HAS_BUILTIN(__builtin_rotateleft64)
+	#define CHRISHENDO_rotl32Rt __builtin_rotateleft32
+	#define CHRISHENDO_rotl64Rt __builtin_rotateleft64
+#elif defined(CHRISHENDO_MSVC)
+	#define CHRISHENDO_rotl32Rt(x, r) _rotl(x, r)
+	#define CHRISHENDO_rotl64Rt(x, r) _rotl64(x, r)
+#else
+	#define CHRISHENDO_rotl32Rt(x, r) CHRISHENDO_rotl32Ct(x, r)
+	#define CHRISHENDO_rotl64Rt(x, r) CHRISHENDO_rotl64Ct(x, r)
+#endif
+
+	CHRISHENDO_INLINE constexpr uint32_t CHRISHENDO_swap32Ct(uint32_t x) {
+		return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
+	}
+
+#if defined(CHRISHENDO_MSVC)
+	#define CHRISHENDO_swap32Rt _byteswap_ulong
+#elif CHRISHENDO_GCC_VERSION >= 403
+	#define CHRISHENDO_swap32Rt __builtin_bswap32
+#else
+	#define CHRISHENDO_swap32Rt CHRISHENDO_swap32Ct
+#endif
+
+	CHRISHENDO_INLINE constexpr uint64_t CHRISHENDO_swap64Ct(uint64_t x) {
+		return ((x << 56) & 0xff00000000000000ULL) | ((x << 40) & 0x00ff000000000000ULL) | ((x << 24) & 0x0000ff0000000000ULL) | ((x << 8) & 0x000000ff00000000ULL) |
+			((x >> 8) & 0x00000000ff000000ULL) | ((x >> 24) & 0x0000000000ff0000ULL) | ((x >> 40) & 0x000000000000ff00ULL) | ((x >> 56) & 0x00000000000000ffULL);
+	}
+
+#if defined(CHRISHENDO_MSVC)
+	#define CHRISHENDO_swap64Rt _byteswap_uint64
+#elif CHRISHENDO_GCC_VERSION >= 403
+	#define CHRISHENDO_swap64Rt __builtin_bswap64
+#else
+	#define CHRISHENDO_swap64Rt CHRISHENDO_swap64Ct
+#endif
 
     struct xoshiro256 {
         size_t state[4]{};
@@ -629,22 +672,6 @@ namespace chrishendo_internal {
         return v64 ^ (v64 >> shift);
     }
 
-    CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO64_avalanche(uint64_t hash){
-        hash ^= hash >> 33;
-        hash *= chrishendoPrime642;
-        hash ^= hash >> 29;
-        hash *= chrishendoPrime643;
-        hash ^= hash >> 32;
-        return hash;
-    }
-
-    CHRISHENDO_ALWAYS_INLINE constexpr uint64_t CHRISHENDO3_avalanche(uint64_t h64) {
-        h64 = CHRISHENDO_xorshift64(h64, 37);
-        h64 *= primeMx1;
-        h64 = CHRISHENDO_xorshift64(h64, 32);
-        return h64;
-    }
-
     CHRISHENDO_ALWAYS_INLINE void accumulateExternalRt(uint64_t* acc, const char* value, const uint8_t* secret, size_t nbStripes) {
         size_t n;
         for (n = 0; n < nbStripes; n++) {
@@ -660,9 +687,7 @@ namespace chrishendo_internal {
             const char* const in = value + n * 64;
             accumulateSimdCt(acc, in, secret + n * 8);
         }
-    }
-
-    
+    }    
 
     template<typename value_type> CHRISHENDO_ALWAYS_INLINE value_type readBitsRt(const void* ptr) {
         value_type returnValue{};
@@ -782,7 +807,7 @@ namespace chrishendo_internal {
             result64 += mix2AccsRt(acc + 2 * i, secret + 16 * i);
         }
 
-        return CHRISHENDO3_avalanche(result64);
+        return avalanche(result64);
     }
 
     constexpr uint64_t mergeAccsCt(const uint64_t* acc, const uint8_t* secret, uint64_t start) {
@@ -849,12 +874,11 @@ namespace chrishendo_internal {
                 | (static_cast<uint32_t>(c3) << 0) | (static_cast<uint32_t>(length) << 8);
             uint64_t const bitflip = (readBitsRt<uint32_t>(secret) ^ readBitsRt<uint32_t>(secret + 4)) + seed64;
             uint64_t const keyed = static_cast<uint64_t>(combined) ^ bitflip;
-            return CHRISHENDO64_avalanche(keyed);
+            return avalanche(keyed);
         }
     }
 
-    template<uint64_t length>
-    CHRISHENDO_ALWAYS_INLINE uint64_t
+    template<uint64_t length> constexpr uint64_t
     CHRISHENDO3_len1To3Ct(const char* value, const uint8_t* secret, uint64_t seed64)
     {
         {
@@ -865,11 +889,11 @@ namespace chrishendo_internal {
                 | (static_cast<uint32_t>(c3) << 0) | (static_cast<uint32_t>(length) << 8);
             uint64_t const bitflip = (readBitsCt<uint32_t>(secret) ^ readBitsCt<uint32_t>(secret + 4)) + seed64;
             uint64_t const keyed = static_cast<uint64_t>(combined) ^ bitflip;
-            return CHRISHENDO64_avalanche(keyed);
+            return avalanche(keyed);
         }
     }
 
-    static uint64_t CHRISHENDO3_rrmxmxRt(uint64_t h64, uint64_t length) {
+    CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO3_rrmxmxRt(uint64_t h64, uint64_t length) {
 		h64 ^= CHRISHENDO_rotl64Rt(h64, 49) ^ CHRISHENDO_rotl64Rt(h64, 24);
 		h64 *= primeMx2;
         h64 ^= (h64 >> 35) + length;
@@ -877,7 +901,7 @@ namespace chrishendo_internal {
         return CHRISHENDO_xorshift64(h64, 28);
     }
 
-    static uint64_t CHRISHENDO3_rrmxmxCt(uint64_t h64, uint64_t length) {
+    constexpr uint64_t CHRISHENDO3_rrmxmxCt(uint64_t h64, uint64_t length) {
 		h64 ^= CHRISHENDO_rotl64Ct(h64, 49) ^ CHRISHENDO_rotl64Ct(h64, 24);
 		h64 *= primeMx2;
 		h64 ^= (h64 >> 35) + length;
@@ -897,7 +921,7 @@ namespace chrishendo_internal {
 		}
 	}
 
-     template<uint64_t length> CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO3_len4To8Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
+     template<uint64_t length> constexpr uint64_t CHRISHENDO3_len4To8Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
 		seed64 ^= ( uint64_t )CHRISHENDO_swap32Ct(( uint32_t )seed64) << 32;
 		{
 			uint32_t const input1  = readBitsCt<uint32_t>(value);
@@ -916,18 +940,18 @@ namespace chrishendo_internal {
 			uint64_t const input_lo = chrishendo_internal::readBitsRt<uint64_t>(value) ^ bitflip1;
 			uint64_t const input_hi = chrishendo_internal::readBitsRt<uint64_t>(value + length - 8) ^ bitflip2;
 			uint64_t const acc		= length + CHRISHENDO_swap64Rt(input_lo) + input_hi + CHRISHENDO_mul128Fold64Rt(input_lo, input_hi);
-			return CHRISHENDO3_avalanche(acc);
+			return avalanche(acc);
 		}
 	}
 
-     template<uint64_t length> CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO3_len9To16Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
+     template<uint64_t length> constexpr uint64_t CHRISHENDO3_len9To16Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
 		{
 			uint64_t const bitflip1 = (chrishendo_internal::readBitsCt<uint64_t>(secret + 24) ^ chrishendo_internal::readBitsCt<uint64_t>(secret + 32)) + seed64;
 			uint64_t const bitflip2 = (chrishendo_internal::readBitsCt<uint64_t>(secret + 40) ^ chrishendo_internal::readBitsCt<uint64_t>(secret + 48)) - seed64;
 			uint64_t const input_lo = chrishendo_internal::readBitsCt<uint64_t>(value) ^ bitflip1;
 			uint64_t const input_hi = chrishendo_internal::readBitsCt<uint64_t>(value + length - 8) ^ bitflip2;
 			uint64_t const acc		= length + CHRISHENDO_swap64Ct(input_lo) + input_hi + CHRISHENDO_mul128Fold64Ct(input_lo, input_hi);
-			return CHRISHENDO3_avalanche(acc);
+			return avalanche(acc);
 		}
 	}
 
@@ -940,7 +964,7 @@ namespace chrishendo_internal {
 		}
 	}
 
-    CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO3_mix16BCt(const char* value, const uint8_t* secret, uint64_t seed64) {
+    constexpr uint64_t CHRISHENDO3_mix16BCt(const char* value, const uint8_t* secret, uint64_t seed64) {
 		{
 			uint64_t const input_lo = chrishendo_internal::readBitsCt<uint64_t>(value);
 			uint64_t const input_hi = chrishendo_internal::readBitsCt<uint64_t>(value + 8);
@@ -966,11 +990,11 @@ namespace chrishendo_internal {
 			}
 			acc += CHRISHENDO3_mix16BRt(value + 0, secret + 0, seed64);
 			acc += CHRISHENDO3_mix16BRt(value + length - 16, secret + 16, seed64);
-			return CHRISHENDO3_avalanche(acc);
+			return avalanche(acc);
 		}
 	}
 
-     template<uint64_t length> CHRISHENDO_ALWAYS_INLINE uint64_t CHRISHENDO3_len17To128Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
+     template<uint64_t length> constexpr uint64_t CHRISHENDO3_len17To128Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
 		{
 			uint64_t acc = length * chrishendoPrime641;
 			if constexpr (length > 32) {
@@ -987,7 +1011,7 @@ namespace chrishendo_internal {
 			}
 			acc += CHRISHENDO3_mix16BCt(value + 0, secret + 0, seed64);
 			acc += CHRISHENDO3_mix16BCt(value + length - 16, secret + 16, seed64);
-			return CHRISHENDO3_avalanche(acc);
+			return avalanche(acc);
 		}
 	}
 
@@ -1002,15 +1026,15 @@ namespace chrishendo_internal {
 				acc += CHRISHENDO3_mix16BRt(value + (16 * i), secret + (16 * i), seed64);
 			}
 			acc_end = CHRISHENDO3_mix16BRt(value + length - 16, secret + chrishendoSecretSizeMin - chrishendoMidSizeLastOffset, seed64);
-			acc = CHRISHENDO3_avalanche(acc);
+			acc = avalanche(acc);
 			for (i = 8; i < nbRounds; i++) {
 				acc_end += CHRISHENDO3_mix16BRt(value + (16 * i), secret + (16 * (i - 8)) + chrishendoMidSizeStartOffset, seed64);
 			}
-			return CHRISHENDO3_avalanche(acc + acc_end);
+			return avalanche(acc + acc_end);
 		}
 	}
 
-     template<uint64_t length> CHRISHENDO_NO_INLINE uint64_t CHRISHENDO3_len129To240Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
+     template<uint64_t length> constexpr uint64_t CHRISHENDO3_len129To240Ct(const char* value, const uint8_t* secret, uint64_t seed64) {
 		{
 			uint64_t acc = length * chrishendoPrime641;
 			uint64_t acc_end;
@@ -1020,18 +1044,18 @@ namespace chrishendo_internal {
 				acc += CHRISHENDO3_mix16BCt(value + (16 * i), secret + (16 * i), seed64);
 			}
 			acc_end = CHRISHENDO3_mix16BCt(value + length - 16, secret + chrishendoSecretSizeMin - chrishendoMidSizeLastOffset, seed64);
-			acc		= CHRISHENDO3_avalanche(acc);
+			acc		= avalanche(acc);
 			for (i = 8; i < nbRounds; i++) {
 				acc_end += CHRISHENDO3_mix16BCt(value + (16 * i), secret + (16 * (i - 8)) + chrishendoMidSizeStartOffset, seed64);
 			}
-			return CHRISHENDO3_avalanche(acc + acc_end);
+			return avalanche(acc + acc_end);
 		}
 	}
 
     template<uint64_t length> CHRISHENDO_ALWAYS_INLINE uint64_t hashxBytesRt(const char* value, const uint8_t* secret,
         uint64_t seed64) {
         if constexpr (length == 0) {
-            return CHRISHENDO64_avalanche(seed64 ^ (chrishendo_internal::readBitsRt<uint64_t>(secret + 56) ^ chrishendo_internal::readBitsRt<uint64_t>(secret + 64)));
+            return avalanche(seed64 ^ (chrishendo_internal::readBitsRt<uint64_t>(secret + 56) ^ chrishendo_internal::readBitsRt<uint64_t>(secret + 64)));
         }
         else if constexpr (length <= 3) { 
             return CHRISHENDO3_len1To3Rt<length>(value, secret, seed64);
@@ -1050,9 +1074,9 @@ namespace chrishendo_internal {
         }
     }
 
-     template<uint64_t length> CHRISHENDO_ALWAYS_INLINE uint64_t hashxBytesCt(const char* value, const uint8_t* secret, uint64_t seed64) {
+     template<uint64_t length> constexpr uint64_t hashxBytesCt(const char* value, const uint8_t* secret, uint64_t seed64) {
         if constexpr (length == 0) {
-            return CHRISHENDO64_avalanche(seed64 ^ (chrishendo_internal::readBitsCt<uint64_t>(secret + 56) ^ chrishendo_internal::readBitsCt<uint64_t>(secret + 64)));
+            return avalanche(seed64 ^ (chrishendo_internal::readBitsCt<uint64_t>(secret + 56) ^ chrishendo_internal::readBitsCt<uint64_t>(secret + 64)));
         }
         else if constexpr (length <= 3) { 
             return CHRISHENDO3_len1To3Ct<length>(value, secret, seed64);
@@ -1099,7 +1123,7 @@ namespace chrishendo {
         /**
          * @brief Default constructor that initializes the seed64 using a random_num value.
          */
-        constexpr key_hasher_new() {
+        constexpr key_hasher() {
             setSeedCt(chrishendo_internal::xoshiro256{}.operator()());
         }
 
@@ -1156,7 +1180,7 @@ namespace chrishendo {
          * @param length The length of the value.
          * @return The hashed value.
          */
-        uint64_t hashKeyCt(const char* value, uint64_t length) const {
+		constexpr uint64_t hashKeyCt(const char* value, uint64_t length) const {
             //std::cout << "NEW HASH STARTING: " << std::endl;
             if (length <= 240) {
                 return (chrishendo_internal::arrayOfCtFunctionPtrs[length])(value, secret, seed64);

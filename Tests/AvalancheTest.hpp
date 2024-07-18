@@ -75,7 +75,7 @@ template<bool isItSeeded, typename keytype, typename hashtype> bool AvalancheTes
 
 	jsonifier::vector<int32_t> bins(keybits * hashbits, 0);
 
-	calcBias<keytype, hashtype>(hash, bins, reps, r);
+	calcBias<isItSeeded, keytype, hashtype>(hash, bins, reps, r);
 
 	//----------
 

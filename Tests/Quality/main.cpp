@@ -1,4 +1,4 @@
-﻿#include "Tests.hpp"
+﻿#include "../Tests.hpp"
 
 //----------------------------------------------------------------------------
 constexpr std::array<uint64_t, 38> lengthsToIterate{ 1, 2, 4, 8, 16, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216,
@@ -6,13 +6,15 @@ constexpr std::array<uint64_t, 38> lengthsToIterate{ 1, 2, 4, 8, 16, 32, 40, 48,
 
 template<bool isItSeeded, typename hashtype, bnch_swt::string_literal libraryName, bnch_swt::string_literal benchmarkColor> void test(const auto hash, const auto* info) {
 	static constexpr int32_t hashbits = sizeof(hashtype) * 8;
-	
+
+	std::cout << "-------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--- Testing " << libraryName.data() << " (" << info->desc.data() << ")" << std::endl << std::endl;
 		{
 			std::cout << "[[[ Keyset 'Seed' Tests ]]] - " << libraryName.data() << std::endl;
 
 			bool result = true;
 			bool drawDiagram = false;
-			result &= SeedTest<true, hashtype>(hash, 1000000, drawDiagram);
+			result &= SeedTest<isItSeeded, hashtype>(hash, 1000000, drawDiagram);
 
 			if (!result) {
 				std::cout << "*********FAIL*********" << std::endl;
@@ -41,15 +43,6 @@ template<bool isItSeeded, typename hashtype, bnch_swt::string_literal libraryNam
 			}
 		}
 		*/
-	std::cout << "-------------------------------------------------------------------------------" << std::endl;
-	std::cout << "--- Testing " << libraryName.data() << " (" << info->desc.data() << ")" << std::endl << std::endl;
-
-	{
-		std::cout << "[[[ Speed Tests ]]] - " << libraryName.data() << std::endl;
-		TinySpeedTest<false, lengthsToIterate, libraryName, benchmarkColor>(hashfunc<false, hashtype>(info->hash), sizeof(hashtype), info->verification);
-
-		BulkSpeedTest<false, libraryName, benchmarkColor>(info->hash, info->verification);
-	}
 		
 	
 	{
@@ -417,10 +410,10 @@ inline void executePythonScript(const std::string& scriptPath, const std::string
 static constexpr std::string_view basePath{ BASE_PATH };
 int32_t main() {
 	setAffinity((1 << 2));
+	testHash<true, "Chrishendo", "turquoise">(HashInfo<true>{ chrishendoTestNew<true>, 0x1B19C201, "A general purpose hybrid hasher", 64 });
 	testHash<true, "XXH3_64bitsTest", "cyan">(HashInfo<true>{ XXH3_64bitsTest<true>, 0x5A116D6B, "A win hash algo by xxHash", 64 });
-	testHash<true, "Chrishendo", "turquoise">(HashInfo<true>{ chrishendoTestNew<true>, 0x814F3144, "A general purpose hybrid hasher", 64 });
+	testHash<false, "Chrishendo", "turquoise">(HashInfo<false>{ chrishendoTestNew<false>, 0x1B19C201, "A general purpose hybrid hasher", 64 });
 	testHash<false, "XXH3_64bitsTest", "cyan">(HashInfo<false>{ XXH3_64bitsTest<false>, 0x5A116D6B, "A win hash algo by xxHash", 64 });
-	testHash<false, "Chrishendo", "turquoise">(HashInfo<false>{ chrishendoTestNew<false>, 0x814F3144, "A general purpose hybrid hasher", 64 });
 	//testHash<"chrishendoNewCt", "turquoise">(HashInfo<true>{ chrishendoTestNewCt<true>, 0x814F3144, "A general purpose hybrid hasher", 64 });
 	bnch_swt::benchmark_suite<"Speed Test">::writeJsonData("./BenchmarkData.json");
 	bnch_swt::benchmark_suite<"Speed Test">::printResults();
